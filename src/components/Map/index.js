@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { View, Image } from 'react-native';
+import { View, Image, TouchableOpacity, PermissionsAndroid } from 'react-native';
+import { Icon } from 'react-native-elements';
 import Geocoder from 'react-native-geocoding';
 
 import Search from '../Search';
@@ -31,6 +32,23 @@ export default class Map extends Component {
       duration: null,
       location: null
     };
+    this.requestLocationPermission();
+  }
+
+  requestLocationPermission = async () => {
+
+    try {
+        const response = await PermissionsAndroid
+            .request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+
+        if (response === PermissionsAndroid.RESULTS.GRANTED)
+            return true;
+
+        return false;
+
+    } catch (err) {
+        return false;
+    }
   }
 
   async componentDidMount() {
@@ -78,6 +96,27 @@ export default class Map extends Component {
     })
   }
 
+  _watchLocation = async () => {
+    await navigator.geolocation.watchPosition(position => {
+      this.setState({ region: position.coords });
+    });
+  };
+
+  _getLocation = async () => {
+    await navigator.geolocation.getCurrentPosition(position => {
+      this.animateMap(position.coords);
+    });
+  };
+
+  animateMap = (coords) => {
+    this.mapView.animateToRegion({
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      latitudeDelta: 0.012,
+      longitudeDelta: 0.01
+    }, 1000);
+  }
+
   render() {
 
     const { region, destination, duration, location } = this.state;
@@ -88,8 +127,18 @@ export default class Map extends Component {
           ref={map => this.mapView = map}
           style={{ flex: 1 }}
           region={region}
-          showsUserLocation
-          loadingEnabled>
+          loadingEnabled
+          loadingBackgroundColor="#333"
+          loadingIndicatorColor="#000"
+          showsUserLocation={true}
+          showsMyLocationButton={false}
+          showsPointsOfInterest={true}
+          showsCompass={false}
+          showsBuildings={false}
+          showsTraffic={false}
+          rotateEnabled={false}
+          zoomEnabled={true}
+          mapType="standard">
 
           {destination && (
             <Fragment>
@@ -138,17 +187,32 @@ export default class Map extends Component {
           )}
 
         </MapView>
-        { destination ? (
+
+        {destination ? (
           <Fragment>
             <Back onPress={this.handleBack}>
               <Image source={backImage} />
             </Back>
-            <Details />
+            <Details duration={duration} />
           </Fragment>
 
         ) : (
-          <Search onLocationSelected={this.handleLocationSelected} />
-        )}
+            <Search onLocationSelected={this.handleLocationSelected} />
+          )}
+
+        <Icon name='crosshairs-gps' type='material-community'
+          raised
+          component={TouchableOpacity}
+          size={20}
+          onPress={this._getLocation}
+          color={'#000'}
+          containerStyle={{
+            position: 'absolute',
+            right: '5%',
+            bottom: '6%',
+            opacity: 1,
+          }} />
+
       </View>
     );
   }

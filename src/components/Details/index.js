@@ -6,6 +6,10 @@ import uberx from '../../assets/uberx.png';
 
 export default class Details extends Component {
   render() {
+
+    const { duration } = this.props;
+    const value = duration;
+
     return(
       <Container>
         <TypeTitle>Popular</TypeTitle>
@@ -13,7 +17,7 @@ export default class Details extends Component {
 
         <TypeImage source={uberx} />
         <TypeTitle>UberX</TypeTitle>
-        <TypeDescription>R$ 13,00</TypeDescription>
+        <TypeDescription>{`R$ ${value},00`}</TypeDescription>
 
         <RequestButton>
           <RequestButtonText>SOLICITAR UBER</RequestButtonText>

@@ -35,6 +35,7 @@ export default class Search extends Component {
           container: {
             position: 'absolute',
             top: Platform.select({ ios: 60, android: 40 }),
+            borderRadius: 5,
             width: '100%'
           },
           textInputContainer: {
